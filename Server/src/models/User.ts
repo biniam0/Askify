@@ -12,7 +12,7 @@ const chatSchema = new mongoose.Schema({
 });
 
 const userSchema = new mongoose.Schema({
-  name: {
+  fullname: {
     type: String,
     required: true,
   },

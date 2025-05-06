@@ -1,20 +1,23 @@
 import express, { Application, Request, Response } from "express";
-import { config } from "dotenv";
+import dotenv from "dotenv";
+import morgan from "morgan";
+import cookieParser from "cookie-parser";
 import { connectToDatabase } from "./db/connection";
-import morgan from "morgan"
+import appRoutes from "./routes/appRouter.route";
 
-config();
+dotenv.config();
 
 const app: Application = express();
 
 // MIDDLEWARES
 app.use(express.json());
-app.use(morgan("dev"))
+app.use(morgan("dev"));
+app.use(cookieParser(process.env.JWT_SECRET!));
 
 const port = process.env.PORT || 3000;
 
 // ROUTES
-app.use("/api/v1", appRoutes)
+app.use("/api/v1", appRoutes);
 
 // DB CONNECTIONS
 connectToDatabase()
