@@ -1,4 +1,5 @@
 import express, { Application, Request, Response } from "express";
+import cors from "cors";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
@@ -10,9 +11,12 @@ dotenv.config();
 const app: Application = express();
 
 // MIDDLEWARES
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
-app.use(morgan("dev"));
 app.use(cookieParser(process.env.JWT_SECRET!));
+
+// REMOVE IT IN THE PRODUCTION
+app.use(morgan("dev"));
 
 const port = process.env.PORT || 3000;
 

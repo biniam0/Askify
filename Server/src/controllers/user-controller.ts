@@ -35,7 +35,7 @@ const userSignup = async (
     const hashedPassword = await hash(password, 10);
     const newUser = new User({ fullname, email, password: hashedPassword });
     await newUser.save();
-      
+
     // Create token and store cookies
     const token = createToken(newUser._id.toString(), newUser.email, "7d");
     const expires = new Date();
@@ -48,7 +48,13 @@ const userSignup = async (
       signed: true,
     });
 
-    return res.status(201).json({ message: "OK", id: newUser._id.toString() });
+    return res
+      .status(201)
+      .json({
+        message: "OK",
+        email: newUser.email,
+        fullname: newUser.fullname,
+      });
   } catch (error: any) {
     console.log(error);
     return res
@@ -89,7 +95,9 @@ const userLogin = async (
       signed: true,
     });
 
-    return res.status(200).json({ message: "OK", id: user._id.toString() });
+    return res
+      .status(200)
+      .json({ message: "OK", email: user.email, fullname: user.fullname });
   } catch (error: any) {
     console.log(error);
     return res
@@ -98,4 +106,27 @@ const userLogin = async (
   }
 };
 
-export { getAllUsers, userSignup, userLogin };
+const verifyUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const user = await User.findById({ _id: res.locals.jwtData.id });
+    if (!user) return res.status(401).send("User not exist");
+
+    if (user._id.toString() !== res.locals.jwtData.id) {
+      return res.status(401).send("Permissions didn't match")
+    }
+    return res
+      .status(200)
+      .json({ message: "OK", email: user.email, fullname: user.fullname });
+  } catch (error: any) {
+    console.log(error);
+    return res
+      .status(404)
+      .json({ message: "Error from User controller", cause: error.message });
+  }
+};
+
+export { getAllUsers, userSignup, userLogin, verifyUser };
