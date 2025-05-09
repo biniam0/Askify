@@ -27,3 +27,7 @@ body {
 .MuiOutlinedInput-notchedOutline {
   border-color: white !important;
 }
+
+::-webkit-scrollbar {
+  display: none;
+}

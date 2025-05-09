@@ -15,13 +15,17 @@ export const validate = (validations: ValidationChain[]) => {
 };
 
 export const loginValidator = [
-  body("email").trim().isEmail().withMessage("Email if require,d"),
+  body("email").trim().isEmail().withMessage("Email is required"),
   body("password")
     .trim()
     .isLength({ min: 3 })
     .withMessage("Atleast 6 characters"),
 ];
 export const signupValidator = [
-  body("fullname").notEmpty().withMessage("Name if required"),
-  ...loginValidator
+  body("fullname").notEmpty().withMessage("Name is required"),
+  ...loginValidator,
+];
+
+export const chatCompletionValidator = [
+  body("message").notEmpty().withMessage("Message is required"),
 ];
