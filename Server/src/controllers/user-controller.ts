@@ -27,14 +27,14 @@ const userSignup = async (
   next: NextFunction
 ): Promise<any> => {
   try {
-    const { fullname, email, password, confirmPassword } = req.body;
+    const { fullname, email, password } = req.body;
 
     const isUserExists = User.findOne({ email });
     if (!isUserExists) return res.status(401).send("User already exists");
 
     const hashedPassword = await hash(password, 10);
     const newUser = new User({ fullname, email, password: hashedPassword });
-    await newUser.save();
+    await newUser.save()
 
     // Create token and store cookies
     const token = createToken(newUser._id.toString(), newUser.email, "7d");
@@ -149,7 +149,7 @@ const userLogout = async (
 
     return res
       .status(200)
-      .json({ message: "User Logged Out Successfully"});
+      .json({ message: "OK", email: user.email, fullname: user.fullname });
   } catch (error: any) {
     console.log(error);
     return res

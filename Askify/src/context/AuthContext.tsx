@@ -5,7 +5,12 @@ import {
   useEffect,
   useState,
 } from "react";
-import { checkAuthStatus, loginUser } from "../services/api-services";
+import {
+  checkAuthStatus,
+  loginUser,
+  logoutUser,
+  signupUser,
+} from "../services/api-services";
 
 interface User {
   name: string;
@@ -44,8 +49,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoggedIn(true);
     }
   };
-  const signup = async (name: string, email: string, password: string) => {};
-  const logout = async () => {};
+  const signup = async (name: string, email: string, password: string) => {
+    try {
+      const data = await signupUser(name, email, password);
+      if (!data?.email || !data?.fullname) {
+        throw new Error("Invalid response from server.");
+      }
+
+      setUser({ email: data.email, name: data.fullname });
+      setIsLoggedIn(true);
+    } catch (err) {
+      console.error("Signup failed in AuthContext:", err);
+      throw err; // Rethrow so the Signup page shows the error
+    }
+  };
+
+  const logout = async () => {
+    await logoutUser();
+    setIsLoggedIn(false);
+    setUser(null);
+    window.location.reload();
+  };
 
   const value = { user, isLoggedIn, login, logout, signup };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

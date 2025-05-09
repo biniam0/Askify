@@ -5,9 +5,20 @@ import { Box, Typography, Button } from "@mui/material";
 
 import { useAuth } from "../context/AuthContext";
 import CustomizedInput from "../components/shared/CustomizedInput";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const Login = () => {
+  const navigate = useNavigate();
   const auth = useAuth();
+
+  useEffect(() => {
+    const isLoggedIn = () => {
+      if (auth?.user) navigate("/chat");
+    };
+    isLoggedIn();
+  }, [auth])
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -19,7 +30,7 @@ const Login = () => {
       await auth?.login(email, password);
       toast.success("Signed In Successfully", { id: "login" });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error("Signing In Failed", { id: "login" });
     }
   };

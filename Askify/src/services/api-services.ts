@@ -5,8 +5,23 @@ export const loginUser = async (email: string, password: string) => {
 
   if (res.status !== 200) throw new Error("Unable to login");
   const data = await res.data;
-  // console.log(data.fullname)
   return data;
+};
+
+export const signupUser = async (
+  name: string,
+  email: string,
+  password: string
+) => {
+  const res = await axios.post("/user/signup", {
+    fullname: name,
+    email,
+    password,
+  });
+
+  if (res.status >= 400) throw new Error("Unable to signup");
+
+  return res.data;
 };
 
 export const checkAuthStatus = async () => {
@@ -42,7 +57,7 @@ export const deleteUserChats = async () => {
 };
 
 export const logoutUser = async () => {
-  const res = await axios.delete("/user/logout");
+  const res = await axios.post("/user/logout");
 
   if (res.status !== 200) throw new Error("Unable to delete chats");
   const data = res.data;
