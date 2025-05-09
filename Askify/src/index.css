@@ -31,3 +31,10 @@ body {
 ::-webkit-scrollbar {
   display: none;
 }
+
+/* pre, code {
+  background: #4a4f8b;
+  border-radius: 4px;
+  padding: 8px;
+  max-width: 500px;
+} */
