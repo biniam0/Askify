@@ -1,10 +1,17 @@
 import { Avatar, Box, Button, IconButton, Typography } from "@mui/material";
 import { red } from "@mui/material/colors";
 import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+
 import ChatItem from "../components/chat/ChatItem";
 import { IoMdSend } from "react-icons/io";
-import { useRef, useState } from "react";
-import { sendChatRequest } from "../services/api-services";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  getUserChats,
+  sendChatRequest,
+  deleteUserChats,
+} from "../services/api-services";
 
 interface ChatMessageType {
   role: "user" | "assistant";
@@ -12,13 +19,14 @@ interface ChatMessageType {
 }
 
 const Chat = () => {
+  const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
   const auth = useAuth();
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" && inputRef.current) {
-      handleSubmit()
+      handleSubmit();
     }
   };
   const handleSubmit = async () => {
@@ -29,42 +37,46 @@ const Chat = () => {
     }
     const newMessage: ChatMessageType = { role: "user", content };
     setChatMessages((prev) => [...prev, newMessage]);
-    const chatData = await sendChatRequest(content)
+    const chatData = await sendChatRequest(content);
     setChatMessages([...chatData.chats]);
   };
 
-  // const conversations = [
-  //   { role: "user", content: "Hi, how can I improve my productivity?" },
-  //   {
-  //     role: "assistant",
-  //     content:
-  //       "Try the Pomodoro technique: work for 25 minutes, then take a 5-minute break.",
-  //   },
-  //   { role: "user", content: "What tools can help with task management?" },
-  //   {
-  //     role: "assistant",
-  //     content:
-  //       "Tools like Trello, Asana, or Todoist are great for organizing tasks.",
-  //   },
-  //   { role: "user", content: "Can you suggest a morning routine?" },
-  //   {
-  //     role: "assistant",
-  //     content:
-  //       "Wake up early, hydrate, exercise for 15 minutes, and plan your day.",
-  //   },
-  //   { role: "user", content: "How do I stay motivated?" },
-  //   {
-  //     role: "assistant",
-  //     content:
-  //       "Set clear goals, celebrate small wins, and maintain a positive mindset.",
-  //   },
-  //   { role: "user", content: "What about dealing with stress?" },
-  //   {
-  //     role: "assistant",
-  //     content:
-  //       "Practice mindfulness, deep breathing, or journaling to manage stress.",
-  //   },
-  // ];
+  const handleDeleteChats = async () => {
+    try {
+      toast.loading("Deleting Chats", { id: "deleteChats" });
+      const chatData = await deleteUserChats();
+      setChatMessages([...chatData.chats]);
+      toast.success("Chats deleted", { id: "deleteChats" });
+    } catch (err) {
+      console.log(err);
+      toast.error("Deleting chats failed", { id: "deleteChats" });
+    }
+  };
+
+  useLayoutEffect(() => {
+    if (auth?.isLoggedIn && auth.user) {
+      toast.loading("Loading chats", { id: "loadchats" });
+      getUserChats()
+        .then((data) => {
+          setChatMessages(data.chats);
+          toast.success("Chat loaded successfully", { id: "loadchats" });
+        })
+        .catch((err) => {
+          console.log(err);
+          toast.error("Loading Failed", { id: "loadchats" });
+        });
+    }
+  }, [auth]);
+
+  useEffect(() => {
+    const isLoggedIn = () => {
+      if (!auth?.user) {
+        return navigate("/login");
+      }
+    }
+    isLoggedIn()
+  }, [auth]);
+
   return (
     <Box
       sx={{
@@ -114,6 +126,7 @@ const Chat = () => {
             education, etc. But avoid sharing personal information.
           </Typography>
           <Button
+            onClick={handleDeleteChats}
             sx={{
               width: "200px",
               my: "auto",

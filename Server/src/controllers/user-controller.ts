@@ -48,13 +48,11 @@ const userSignup = async (
       signed: true,
     });
 
-    return res
-      .status(201)
-      .json({
-        message: "OK",
-        email: newUser.email,
-        fullname: newUser.fullname,
-      });
+    return res.status(201).json({
+      message: "OK",
+      email: newUser.email,
+      fullname: newUser.fullname,
+    });
   } catch (error: any) {
     console.log(error);
     return res
@@ -116,7 +114,7 @@ const verifyUser = async (
     if (!user) return res.status(401).send("User not exist");
 
     if (user._id.toString() !== res.locals.jwtData.id) {
-      return res.status(401).send("Permissions didn't match")
+      return res.status(401).send("Permissions didn't match");
     }
     return res
       .status(200)
@@ -129,4 +127,35 @@ const verifyUser = async (
   }
 };
 
-export { getAllUsers, userSignup, userLogin, verifyUser };
+const userLogout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const user = await User.findById({ _id: res.locals.jwtData.id });
+    if (!user) return res.status(401).send("User not exist");
+
+    if (user._id.toString() !== res.locals.jwtData.id) {
+      return res.status(401).send("Permissions didn't match");
+    }
+
+    res.clearCookie(AUTH_COOKIE, {
+      domain: "localhost",
+      httpOnly: true,
+      signed: true,
+      path: "/",
+    });
+
+    return res
+      .status(200)
+      .json({ message: "User Logged Out Successfully"});
+  } catch (error: any) {
+    console.log(error);
+    return res
+      .status(404)
+      .json({ message: "Error from User controller", cause: error.message });
+  }
+};
+
+export { getAllUsers, userSignup, userLogin, verifyUser, userLogout };

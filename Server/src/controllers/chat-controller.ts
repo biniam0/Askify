@@ -3,10 +3,6 @@ import User from "../models/User";
 // GEMINI
 import { GoogleGenAI } from "@google/genai";
 
-// OPENAI
-import { ChatCompletionMessageParam } from "openai/resources/chat/index";
-import OpenAI from "openai";
-
 const generateChatCompletion = async (
   req: Request,
   res: Response,
@@ -57,4 +53,62 @@ const generateChatCompletion = async (
   }
 };
 
-export default generateChatCompletion;
+const sendChatsToUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const user = await User.findById(res.locals.jwtData.id);
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: "User not registered or Token malfunctioned" });
+    }
+
+    if (user._id.toString() !== res.locals.jwtData.id) {
+      return res.status(401).send("Permissions denied!");
+    }
+
+    res.status(200).json({ message: "OK", chats: user.chats });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Error occurred while fetching OpenAI response" });
+  }
+};
+
+const deleteUserChats = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const user = await User.findById(res.locals.jwtData.id);
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: "User not registered or Token malfunctioned" });
+    }
+    if (user._id.toString() !== res.locals.jwtData.id) {
+      return res.status(401).send("Permissions denied!");
+    }
+
+    await User.updateOne(
+      { _id: res.locals.jwtData.id },
+      { $set: { chats: [] } }
+    );
+    user.save();
+
+    res.status(200).json({ message: "OKKKK!", chats: user.chats });
+    // res.redirect("http://localhost:5173/chat")
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Error occurred while deleting chats" });
+  }
+};
+
+export { generateChatCompletion, sendChatsToUser, deleteUserChats };
